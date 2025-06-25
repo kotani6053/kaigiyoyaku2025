@@ -26,7 +26,7 @@ const App = () => {
     department: "",
     purpose: "",
     guest: "",
-    room: "応接室",
+    room: "2階会議室①",
     date: "",
     time: ""
   });
