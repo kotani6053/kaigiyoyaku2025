@@ -73,9 +73,12 @@ const App = () => {
           <input name="purpose" placeholder="使用目的" value={formData.purpose} onChange={handleChange} required />
           <input name="guest" placeholder="来客者名" value={formData.guest} onChange={handleChange} />
           <select name="room" value={formData.room} onChange={handleChange}>
-            <option value="会議室">会議室</option>
-            <option value="応接室">応接室</option>
-          </select>
+  <option value="1階食堂">1階食堂</option>
+  <option value="2階会議室①">2階会議室①</option>
+  <option value="2階会議室②">2階会議室②</option>
+  <option value="3階会議室">3階会議室</option>
+  <option value="応接室">応接室</option>
+</select>
           <input name="date" type="date" value={formData.date} onChange={handleChange} required />
           <input name="time" type="time" step="1800" min="08:30" max="18:00" value={formData.time} onChange={handleChange} required />
           <button className="bg-blue-600 text-white px-4 py-2 rounded">予約する</button>
