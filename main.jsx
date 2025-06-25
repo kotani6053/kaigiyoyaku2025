@@ -80,7 +80,17 @@ const App = () => {
   <option value="応接室">応接室</option>
 </select>
           <input name="date" type="date" value={formData.date} onChange={handleChange} required />
-          <input name="time" type="time" step="1800" min="08:30" max="18:00" value={formData.time} onChange={handleChange} required />
+          <input
+  name="time"
+  type="time"
+  step="600"
+  min="08:30"
+  max="18:00"
+  value={formData.time}
+  onChange={handleChange}
+  required
+/>
+
           <button className="bg-blue-600 text-white px-4 py-2 rounded">予約する</button>
         </form>
       )}
