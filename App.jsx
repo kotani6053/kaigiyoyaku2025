@@ -1,1 +1,1 @@
-import React from 'react'; export default function App() { return <h1>会議室予約アプリ（仮）</h1>; }
+import React from 'react'; export default function App() { return <h1>KOTANI会議室予約アプリ</h1>; }
