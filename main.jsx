@@ -75,9 +75,9 @@ const App = () => {
           <select name="department" value={formData.department} onChange={handleChange} required>
             <option value="">部署を選択してください</option>
             <option value="役員">役員</option>
-            <option value="総務部">総務部</option>
             <option value="新門司手摺">新門司手摺</option>
             <option value="新門司セラミック">新門司セラミック</option>
+            <option value="総務部">総務部</option>
             <option value="その他">その他</option>
           </select>
 
