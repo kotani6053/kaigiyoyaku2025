@@ -79,6 +79,12 @@ const App = () => {
   <option value="3階会議室">3階会議室</option>
   <option value="応接室">応接室</option>
 </select>
+          <select name="time" value={formData.time} onChange={handleChange} required>
+  {generateTimes("08:30", "18:00", 10).map((t) => (
+    <option key={t} value={t}>{t}</option>
+  ))}
+</select>
+
           <input name="date" type="date" value={formData.date} onChange={handleChange} required />
           <input
   name="time"
