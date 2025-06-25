@@ -83,17 +83,21 @@ const App = () => {
       )}
 
       {view === "list" && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">予約一覧</h2>
-          <ul>
-            {reservations.map((r, i) => (
-              <li key={i} className="border-b py-1">
-                {r.date} {r.time} [{r.room}] - {r.name} ({r.department}) / {r.purpose} {r.guest && `/ 来客: ${r.guest}`}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+  <div>
+    <h2 className="text-xl font-semibold mb-2">予約一覧</h2>
+    <ul>
+      {reservations.map((r, i) => (
+        <li key={i} className="border-b py-1 flex justify-between items-center">
+          {r.date} {r.time} [{r.room}] - {r.name} ({r.department}) / {r.purpose} {r.guest && `/ 来客: ${r.guest}`}
+          <button
+            className="text-red-500 hover:underline ml-4"
+            onClick={() => handleDelete(i)}
+          >削除</button>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
 
       {view === "admin" && adminMode && (
         <div>
