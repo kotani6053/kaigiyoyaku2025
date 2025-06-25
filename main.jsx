@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 const App = () => {
   const [view, setView] = useState("form");
   const [reservations, setReservations] = useState([]);
-  const [adminMode, setAdminMode] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     department: "役員",
@@ -31,16 +30,6 @@ const App = () => {
     setReservations([...reservations, formData]);
     alert("予約が完了しました。初期画面に戻ります。");
     setView("form");
-  };
-
-  const handleAdminLogin = () => {
-    const code = prompt("パスコードを入力してください：");
-    if (code === "kotani6051") {
-      setAdminMode(true);
-      setView("admin");
-    } else {
-      alert("パスコードが間違っています。");
-    }
   };
 
   const handleDelete = (index) => {
@@ -71,7 +60,6 @@ const App = () => {
       <div className="mb-6">
         <button className="bg-blue-500 text-white px-4 py-2 rounded mr-4" onClick={() => setView("form")}>予約</button>
         <button className="bg-green-500 text-white px-4 py-2 rounded mr-4" onClick={() => setView("list")}>一覧</button>
-        <button className="bg-gray-600 text-white px-4 py-2 rounded" onClick={handleAdminLogin}>管理者</button>
       </div>
 
       {view === "form" && (
@@ -79,9 +67,9 @@ const App = () => {
           <input name="name" placeholder="名前" value={formData.name} onChange={handleChange} required className="text-lg p-2 border rounded" />
           <select name="department" value={formData.department} onChange={handleChange} className="text-lg p-2 border rounded">
             <option value="役員">役員</option>
-            <option value="総務部">総務部</option>
             <option value="新門司手摺">新門司手摺</option>
             <option value="新門司セラミック">新門司セラミック</option>
+            <option value="総務部">総務部</option>
             <option value="その他">その他</option>
           </select>
           <input name="purpose" placeholder="使用目的" value={formData.purpose} onChange={handleChange} required className="text-lg p-2 border rounded" />
@@ -99,7 +87,7 @@ const App = () => {
         </form>
       )}
 
-      {(view === "list" || (view === "admin" && adminMode)) && (
+      {view === "list" && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">予約一覧</h2>
           {Object.entries(groupedReservations()).map(([date, rooms]) => (
@@ -112,9 +100,7 @@ const App = () => {
                     {entries.map((r, i) => (
                       <li key={i} className="mb-1">
                         {r.time} - {r.name}（{r.department}） / {r.purpose} {r.guest && `/ 来客: ${r.guest}`}
-                        {view === "admin" && adminMode && (
-                          <button onClick={() => handleDelete(i)} className="text-red-500 ml-4 hover:underline">削除</button>
-                        )}
+                        <button onClick={() => handleDelete(i)} className="text-red-500 ml-4 hover:underline">削除</button>
                       </li>
                     ))}
                   </ul>
