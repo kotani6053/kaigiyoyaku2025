@@ -67,7 +67,7 @@ const App = () => {
 
   return (
     <div className="p-6 font-sans text-lg">
-      <h1 className="text-4xl font-bold mb-6">会議室予約アプリ</h1>
+      <h1 className="text-4xl font-bold mb-6">KOTANI会議室予約アプリ</h1>
       <div className="mb-6">
         <button className="bg-blue-500 text-white px-4 py-2 rounded mr-4" onClick={() => setView("form")}>予約</button>
         <button className="bg-green-500 text-white px-4 py-2 rounded mr-4" onClick={() => setView("list")}>一覧</button>
