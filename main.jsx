@@ -85,11 +85,12 @@ const App = () => {
           <input name="guest" placeholder="来客者名" value={formData.guest} onChange={handleChange} />
 
           <select name="room" value={formData.room} onChange={handleChange}>
+            <option value="応接室">応接室</option>
             <option value="1階食堂">1階食堂</option>
             <option value="2階会議室①">2階会議室①</option>
             <option value="2階会議室②">2階会議室②</option>
             <option value="3階会議室">3階会議室</option>
-            <option value="応接室">応接室</option>
+
           </select>
 
           <input name="date" type="date" value={formData.date} onChange={handleChange} required />
