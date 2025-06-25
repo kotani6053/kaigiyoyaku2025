@@ -69,7 +69,14 @@ const App = () => {
       {view === "form" && (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-2 max-w-md">
           <input name="name" placeholder="名前" value={formData.name} onChange={handleChange} required />
-          <input name="department" placeholder="部署" value={formData.department} onChange={handleChange} required />
+<select name="department" value={formData.department} onChange={handleChange} required>
+  <option value="">部署を選択してください</option>
+  <option value="役員">役員</option>
+  <option value="総務部">総務部</option>
+  <option value="新門司手摺">新門司手摺</option>
+  <option value="新門司セラミック">新門司セラミック</option>
+  <option value="その他">その他</option>
+</select>
           <input name="purpose" placeholder="使用目的" value={formData.purpose} onChange={handleChange} required />
           <input name="guest" placeholder="来客者名" value={formData.guest} onChange={handleChange} />
           <select name="room" value={formData.room} onChange={handleChange}>
