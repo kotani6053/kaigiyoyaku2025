@@ -1,15 +1,17 @@
-// src/firebase.js
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBtLFNwnAqBYFR7eFi-bKaT4Vq9Zu15a6I",
-  authDomain: "kotaniapp-4f017.firebaseapp.com",
-  projectId: "kotaniapp-4f017",
-  storageBucket: "kotaniapp-4f017.appspot.com", // ← 修正点
-  messagingSenderId: "623409374889",
-  appId: "1:623409374889:web:8aba02fed565f56c23abb8"
+  apiKey: "AIzaSyBc4YbC8i4e0vTGAnNB_7KPAw0tIPBXw-k",
+  authDomain: "kotani-y.firebaseapp.com",
+  projectId: "kotani-y",
+  storageBucket: "kotani-y.firebasestorage.app",
+  messagingSenderId: "660389982374",
+  appId: "1:660389982374:web:3797ee189f84c998288467"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
