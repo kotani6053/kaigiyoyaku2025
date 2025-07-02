@@ -252,9 +252,16 @@ const App = () => {
             ))}
           </select>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded text-xl">予約する</button>
-        </form>
-      )}
+          <button
+  className="bg-green-500 text-white px-4 py-2 rounded"
+  onClick={() => {
+    console.log("一覧表示切り替え");
+    setView("list");
+  }}
+>
+  一覧
+</button>
+
 
       {view === "list" && (
         <div>
