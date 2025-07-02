@@ -1,90 +1,28 @@
-// src/components/ReservationForm.jsx
+import React, { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "./firebase";
+import ReservationForm from "./components/ReservationForm";
+import CalendarView from "./components/CalendarView";
 
-import React, { useState } from "react";
-import { addDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import { isOverlapping } from "../utils/overlapCheck";
+const App = () => {
+  const [reservations, setReservations] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("2025-07-02");
 
-const ReservationForm = ({ selectedDate, onReserved }) => {
-  const [name, setName] = useState("");
-  const [department, setDepartment] = useState("");
-  const [purpose, setPurpose] = useState("");
-  const [guest, setGuest] = useState("");
-  const [startTime, setStartTime] = useState("08:30");
-  const [endTime, setEndTime] = useState("08:40");
-
-  const generateTimeOptions = () => {
-    const times = [];
-    for (let hour = 8; hour <= 17; hour++) {
-      for (let min = 0; min < 60; min += 10) {
-        times.push(`${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
-      }
-    }
-    times.push("18:00");
-    return times;
+  const fetchReservations = async () => {
+    const snapshot = await getDocs(collection(db, "reservations"));
+    setReservations(snapshot.docs.map((doc) => doc.data()));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (startTime >= endTime) {
-      alert("終了時間は開始時間より後にしてください。");
-      return;
-    }
-
-    const querySnapshot = await getDocs(collection(db, "reservations"));
-    const existingReservations = querySnapshot.docs
-      .map((doc) => doc.data())
-      .filter((r) => r.date === selectedDate);
-
-    for (let r of existingReservations) {
-      if (isOverlapping(startTime, endTime, r.startTime, r.endTime)) {
-        alert(`この時間帯は既に予約があります（${r.startTime}〜${r.endTime}）`);
-        return;
-      }
-    }
-
-    await addDoc(collection(db, "reservations"), {
-      date: selectedDate,
-      name,
-      department,
-      purpose,
-      guest,
-      startTime,
-      endTime,
-      createdAt: new Date(),
-    });
-
-    setName("");
-    setDepartment("");
-    setPurpose("");
-    setGuest("");
-    setStartTime("08:30");
-    setEndTime("08:40");
-
-    onReserved(); // 表示リロード用
-  };
+  useEffect(() => {
+    fetchReservations();
+  }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
-      <h2 className="text-lg font-bold mb-2">会議室予約フォーム</h2>
-      <input className="w-full mb-2 p-1 border rounded" value={name} onChange={(e) => setName(e.target.value)} placeholder="名前" required />
-      <input className="w-full mb-2 p-1 border rounded" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="部署" required />
-      <input className="w-full mb-2 p-1 border rounded" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="使用目的" required />
-      <input className="w-full mb-2 p-1 border rounded" value={guest} onChange={(e) => setGuest(e.target.value)} placeholder="来客者名（任意）" />
-
-      <div className="flex gap-2 mb-2">
-        <select className="w-1/2 border p-1 rounded" value={startTime} onChange={(e) => setStartTime(e.target.value)}>
-          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-        <select className="w-1/2 border p-1 rounded" value={endTime} onChange={(e) => setEndTime(e.target.value)}>
-          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-      </div>
-
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">予約する</button>
-    </form>
+    <div className="max-w-2xl mx-auto mt-4">
+      <ReservationForm selectedDate={selectedDate} onReserved={fetchReservations} />
+      <CalendarView reservations={reservations} selectedDate={selectedDate} />
+    </div>
   );
 };
 
-export default ReservationForm;
+export default App;
