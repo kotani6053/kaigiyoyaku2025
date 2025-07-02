@@ -1,111 +1,143 @@
-import React, { useState, useEffect } from "react";
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-  deleteDoc,
-  doc
-} from "firebase/firestore";
-import "./App.css";
+// src/components/ReservationForm.jsx
 
-function App() {
+import React, { useState } from "react";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../firebase"; // ← Firebase接続ファイル
+
+const ReservationForm = ({ selectedDate }) => {
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [visitor, setVisitor] = useState("");
-  const [room, setRoom] = useState("会議室");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [reservations, setReservations] = useState([]);
+  const [guest, setGuest] = useState("");
+  const [startTime, setStartTime] = useState("08:30");
+  const [endTime, setEndTime] = useState("09:00");
 
-  const reservationsRef = collection(db, "reservations");
+  // 🔧 10分単位の時間スロットを作る関数
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 8; hour <= 17; hour++) {
+      for (let min = 0; min < 60; min += 10) {
+        const h = String(hour).padStart(2, "0");
+        const m = String(min).padStart(2, "0");
+        times.push(`${h}:${m}`);
+      }
+    }
+    times.push("18:00");
+    return times;
+  };
 
-  // Firestoreからリアルタイム取得
-  useEffect(() => {
-    const q = query(reservationsRef, orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setReservations(snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })));
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // 登録処理
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !department || !purpose || !date || !time) {
-      alert("すべての項目を入力してください");
+    if (startTime >= endTime) {
+      alert("終了時間は開始時間より後にしてください。");
       return;
     }
 
-    try {
-      await addDoc(reservationsRef, {
-        name,
-        department,
-        purpose,
-        visitor,
-        room,
-        date,
-        time,
-        createdAt: new Date()
-      });
-      // 入力初期化
-      setName("");
-      setDepartment("");
-      setPurpose("");
-      setVisitor("");
-      setRoom("会議室");
-      setDate("");
-      setTime("");
-    } catch (error) {
-      console.error("保存エラー:", error);
-    }
-  };
+    await addDoc(collection(db, "reservations"), {
+      date: selectedDate,
+      name,
+      department,
+      purpose,
+      guest,
+      startTime,
+      endTime,
+      createdAt: new Date()
+    });
 
-  // 削除処理
-  const handleDelete = async (id) => {
-    if (window.confirm("この予約を削除しますか？")) {
-      await deleteDoc(doc(db, "reservations", id));
-    }
+    // フォームクリア
+    setName("");
+    setDepartment("");
+    setPurpose("");
+    setGuest("");
+    setStartTime("08:30");
+    setEndTime("09:00");
   };
 
   return (
-    <div className="App">
-      <h1>会議室予約システム</h1>
+    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
+      <h2 className="text-xl font-bold mb-2">予約フォーム</h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px", maxWidth: "400px" }}>
-        <input type="text" placeholder="名前" value={name} onChange={(e) => setName(e.target.value)} />
-        <input type="text" placeholder="部署" value={department} onChange={(e) => setDepartment(e.target.value)} />
-        <input type="text" placeholder="使用目的" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
-        <input type="text" placeholder="来客者名（任意）" value={visitor} onChange={(e) => setVisitor(e.target.value)} />
-        <select value={room} onChange={(e) => setRoom(e.target.value)}>
-          <option value="会議室">会議室</option>
-          <option value="応接室">応接室</option>
+      <div className="mb-2">
+        <label className="block text-sm font-medium">名前</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="border p-1 w-full rounded"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium">部署</label>
+        <input
+          type="text"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+          required
+          className="border p-1 w-full rounded"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium">使用目的</label>
+        <input
+          type="text"
+          value={purpose}
+          onChange={(e) => setPurpose(e.target.value)}
+          required
+          className="border p-1 w-full rounded"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium">来客者名（任意）</label>
+        <input
+          type="text"
+          value={guest}
+          onChange={(e) => setGuest(e.target.value)}
+          className="border p-1 w-full rounded"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium">開始時間</label>
+        <select
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          className="border p-1 w-full rounded"
+        >
+          {generateTimeOptions().map((time) => (
+            <option key={time} value={time}>
+              {time}
+            </option>
+          ))}
         </select>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} step="1800" min="08:30" max="18:00" />
-        <button type="submit">予約する</button>
-      </form>
+      </div>
 
-      <h2>予約一覧</h2>
-      <ul style={{ padding: 0, listStyle: "none" }}>
-        {reservations.map(res => (
-          <li key={res.id} style={{ borderBottom: "1px solid #ccc", padding: "8px 0" }}>
-            <strong>{res.date} {res.time}</strong> - {res.room} <br />
-            {res.name}（{res.department}）{res.purpose && `：${res.purpose}`}
-            {res.visitor && <span>｜来客: {res.visitor}</span>}
-            <br />
-            <button onClick={() => handleDelete(res.id)}>削除</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium">終了時間</label>
+        <select
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+          className="border p-1 w-full rounded"
+        >
+          {generateTimeOptions().map((time) => (
+            <option key={time} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        予約する
+      </button>
+    </form>
   );
-}
+};
 
-export default App;
+export default ReservationForm;
