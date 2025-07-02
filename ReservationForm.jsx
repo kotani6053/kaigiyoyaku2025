@@ -1,9 +1,7 @@
 // src/components/ReservationForm.jsx
-
 import React, { useState } from "react";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { isOverlapping } from "../utils/overlapCheck";
 
 const ReservationForm = ({ selectedDate, onReserved }) => {
   const [name, setName] = useState("");
@@ -12,6 +10,17 @@ const ReservationForm = ({ selectedDate, onReserved }) => {
   const [guest, setGuest] = useState("");
   const [startTime, setStartTime] = useState("08:30");
   const [endTime, setEndTime] = useState("08:40");
+
+  // 時間の重複チェック関数
+  const isOverlapping = (start1, end1, start2, end2) => {
+    return Math.max(start1, start2) < Math.min(end1, end2);
+  };
+
+  // 文字列"HH:mm"を分に変換
+  const toMinutes = (t) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
 
   const generateTimeOptions = () => {
     const times = [];
@@ -34,11 +43,16 @@ const ReservationForm = ({ selectedDate, onReserved }) => {
 
     const querySnapshot = await getDocs(collection(db, "reservations"));
     const existingReservations = querySnapshot.docs
-      .map((doc) => doc.data())
-      .filter((r) => r.date === selectedDate);
+      .map(doc => doc.data())
+      .filter(r => r.date === selectedDate);
+
+    const s1 = toMinutes(startTime);
+    const e1 = toMinutes(endTime);
 
     for (let r of existingReservations) {
-      if (isOverlapping(startTime, endTime, r.startTime, r.endTime)) {
+      const s2 = toMinutes(r.startTime);
+      const e2 = toMinutes(r.endTime);
+      if (isOverlapping(s1, e1, s2, e2)) {
         alert(`この時間帯は既に予約があります（${r.startTime}〜${r.endTime}）`);
         return;
       }
@@ -52,7 +66,7 @@ const ReservationForm = ({ selectedDate, onReserved }) => {
       guest,
       startTime,
       endTime,
-      createdAt: new Date(),
+      createdAt: new Date()
     });
 
     setName("");
@@ -62,27 +76,67 @@ const ReservationForm = ({ selectedDate, onReserved }) => {
     setStartTime("08:30");
     setEndTime("08:40");
 
-    onReserved(); // 表示リロード用
+    onReserved(); // 予約後に親へ通知して最新データを取得
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
+    <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md mb-6">
       <h2 className="text-lg font-bold mb-2">会議室予約フォーム</h2>
-      <input className="w-full mb-2 p-1 border rounded" value={name} onChange={(e) => setName(e.target.value)} placeholder="名前" required />
-      <input className="w-full mb-2 p-1 border rounded" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="部署" required />
-      <input className="w-full mb-2 p-1 border rounded" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="使用目的" required />
-      <input className="w-full mb-2 p-1 border rounded" value={guest} onChange={(e) => setGuest(e.target.value)} placeholder="来客者名（任意）" />
+      <input
+        className="w-full mb-2 p-2 border rounded"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="名前"
+        required
+      />
+      <input
+        className="w-full mb-2 p-2 border rounded"
+        value={department}
+        onChange={e => setDepartment(e.target.value)}
+        placeholder="部署"
+        required
+      />
+      <input
+        className="w-full mb-2 p-2 border rounded"
+        value={purpose}
+        onChange={e => setPurpose(e.target.value)}
+        placeholder="使用目的"
+        required
+      />
+      <input
+        className="w-full mb-2 p-2 border rounded"
+        value={guest}
+        onChange={e => setGuest(e.target.value)}
+        placeholder="来客者名（任意）"
+      />
 
-      <div className="flex gap-2 mb-2">
-        <select className="w-1/2 border p-1 rounded" value={startTime} onChange={(e) => setStartTime(e.target.value)}>
-          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
+      <div className="flex gap-2 mb-4">
+        <select
+          className="w-1/2 p-2 border rounded"
+          value={startTime}
+          onChange={e => setStartTime(e.target.value)}
+        >
+          {generateTimeOptions().map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </select>
-        <select className="w-1/2 border p-1 rounded" value={endTime} onChange={(e) => setEndTime(e.target.value)}>
-          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
+        <select
+          className="w-1/2 p-2 border rounded"
+          value={endTime}
+          onChange={e => setEndTime(e.target.value)}
+        >
+          {generateTimeOptions().map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </select>
       </div>
 
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">予約する</button>
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+      >
+        予約する
+      </button>
     </form>
   );
 };
