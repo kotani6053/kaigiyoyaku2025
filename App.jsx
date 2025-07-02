@@ -23,7 +23,7 @@ function App() {
 
   const reservationsRef = collection(db, "reservations");
 
-  // Firestore からリアルタイムで取得
+  // Firestoreからリアルタイム取得
   useEffect(() => {
     const q = query(reservationsRef, orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -35,6 +35,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // 登録処理
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !department || !purpose || !date || !time) {
@@ -53,6 +54,7 @@ function App() {
         time,
         createdAt: new Date()
       });
+      // 入力初期化
       setName("");
       setDepartment("");
       setPurpose("");
@@ -61,10 +63,11 @@ function App() {
       setDate("");
       setTime("");
     } catch (error) {
-      console.error("予約の保存に失敗しました:", error);
+      console.error("保存エラー:", error);
     }
   };
 
+  // 削除処理
   const handleDelete = async (id) => {
     if (window.confirm("この予約を削除しますか？")) {
       await deleteDoc(doc(db, "reservations", id));
@@ -74,11 +77,12 @@ function App() {
   return (
     <div className="App">
       <h1>会議室予約システム</h1>
-      <form onSubmit={handleSubmit}>
-        <input placeholder="名前" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="部署" value={department} onChange={(e) => setDepartment(e.target.value)} />
-        <input placeholder="使用目的" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
-        <input placeholder="来客者名（任意）" value={visitor} onChange={(e) => setVisitor(e.target.value)} />
+
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px", maxWidth: "400px" }}>
+        <input type="text" placeholder="名前" value={name} onChange={(e) => setName(e.target.value)} />
+        <input type="text" placeholder="部署" value={department} onChange={(e) => setDepartment(e.target.value)} />
+        <input type="text" placeholder="使用目的" value={purpose} onChange={(e) => setPurpose(e.target.value)} />
+        <input type="text" placeholder="来客者名（任意）" value={visitor} onChange={(e) => setVisitor(e.target.value)} />
         <select value={room} onChange={(e) => setRoom(e.target.value)}>
           <option value="会議室">会議室</option>
           <option value="応接室">応接室</option>
@@ -89,11 +93,13 @@ function App() {
       </form>
 
       <h2>予約一覧</h2>
-      <ul>
+      <ul style={{ padding: 0, listStyle: "none" }}>
         {reservations.map(res => (
-          <li key={res.id}>
-            {res.date} {res.time} - {res.room} : {res.name}（{res.department}） {res.purpose}
-            {res.visitor && <> 来客: {res.visitor}</>}
+          <li key={res.id} style={{ borderBottom: "1px solid #ccc", padding: "8px 0" }}>
+            <strong>{res.date} {res.time}</strong> - {res.room} <br />
+            {res.name}（{res.department}）{res.purpose && `：${res.purpose}`}
+            {res.visitor && <span>｜来客: {res.visitor}</span>}
+            <br />
             <button onClick={() => handleDelete(res.id)}>削除</button>
           </li>
         ))}
@@ -103,4 +109,3 @@ function App() {
 }
 
 export default App;
-
