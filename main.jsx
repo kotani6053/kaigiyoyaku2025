@@ -53,8 +53,50 @@ const App = () => {
     return Math.max(s1, s2) < Math.min(e1, e2);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const s1 = toMinutes(formData.startTime);
+  const e1 = toMinutes(formData.endTime);
+
+  if (s1 >= e1) {
+    alert("終了時間は開始時間より後にしてください。");
+    return;
+  }
+
+  const duplicate = reservations.find((r) => {
+    return (
+      r.date === formData.date &&
+      r.room === formData.room &&
+      isOverlapping(s1, e1, toMinutes(r.startTime), toMinutes(r.endTime))
+    );
+  });
+
+  if (duplicate) {
+    alert("この時間帯はすでに予約されています。");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "reservations"), formData);
+    alert("予約が完了しました。初期画面に戻ります。");
+    setView("form");
+
+    setFormData({
+      name: "",
+      department: "役員",
+      purpose: "",
+      guest: "",
+      room: "1階食堂",
+      date: "",
+      startTime: "08:30",
+      endTime: "08:40"
+    });
+  } catch (error) {
+    alert("Firestoreへの予約登録に失敗しました：" + error.message);
+    console.error("addDocエラー:", error);
+  }
+};
 
     const s1 = toMinutes(formData.startTime);
     const e1 = toMinutes(formData.endTime);
