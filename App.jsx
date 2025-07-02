@@ -1,25 +1,23 @@
 // src/components/ReservationForm.jsx
 
 import React, { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase"; // ← Firebase接続ファイル
+import { addDoc, collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { isOverlapping } from "../utils/overlapCheck";
 
-const ReservationForm = ({ selectedDate }) => {
+const ReservationForm = ({ selectedDate, onReserved }) => {
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [purpose, setPurpose] = useState("");
   const [guest, setGuest] = useState("");
   const [startTime, setStartTime] = useState("08:30");
-  const [endTime, setEndTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("08:40");
 
-  // 🔧 10分単位の時間スロットを作る関数
   const generateTimeOptions = () => {
     const times = [];
     for (let hour = 8; hour <= 17; hour++) {
       for (let min = 0; min < 60; min += 10) {
-        const h = String(hour).padStart(2, "0");
-        const m = String(min).padStart(2, "0");
-        times.push(`${h}:${m}`);
+        times.push(`${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
       }
     }
     times.push("18:00");
@@ -28,9 +26,22 @@ const ReservationForm = ({ selectedDate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (startTime >= endTime) {
       alert("終了時間は開始時間より後にしてください。");
       return;
+    }
+
+    const querySnapshot = await getDocs(collection(db, "reservations"));
+    const existingReservations = querySnapshot.docs
+      .map((doc) => doc.data())
+      .filter((r) => r.date === selectedDate);
+
+    for (let r of existingReservations) {
+      if (isOverlapping(startTime, endTime, r.startTime, r.endTime)) {
+        alert(`この時間帯は既に予約があります（${r.startTime}〜${r.endTime}）`);
+        return;
+      }
     }
 
     await addDoc(collection(db, "reservations"), {
@@ -41,101 +52,37 @@ const ReservationForm = ({ selectedDate }) => {
       guest,
       startTime,
       endTime,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
-    // フォームクリア
     setName("");
     setDepartment("");
     setPurpose("");
     setGuest("");
     setStartTime("08:30");
-    setEndTime("09:00");
+    setEndTime("08:40");
+
+    onReserved(); // 表示リロード用
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-4 bg-white rounded shadow-md">
-      <h2 className="text-xl font-bold mb-2">予約フォーム</h2>
+      <h2 className="text-lg font-bold mb-2">会議室予約フォーム</h2>
+      <input className="w-full mb-2 p-1 border rounded" value={name} onChange={(e) => setName(e.target.value)} placeholder="名前" required />
+      <input className="w-full mb-2 p-1 border rounded" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="部署" required />
+      <input className="w-full mb-2 p-1 border rounded" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="使用目的" required />
+      <input className="w-full mb-2 p-1 border rounded" value={guest} onChange={(e) => setGuest(e.target.value)} placeholder="来客者名（任意）" />
 
-      <div className="mb-2">
-        <label className="block text-sm font-medium">名前</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="border p-1 w-full rounded"
-        />
-      </div>
-
-      <div className="mb-2">
-        <label className="block text-sm font-medium">部署</label>
-        <input
-          type="text"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          required
-          className="border p-1 w-full rounded"
-        />
-      </div>
-
-      <div className="mb-2">
-        <label className="block text-sm font-medium">使用目的</label>
-        <input
-          type="text"
-          value={purpose}
-          onChange={(e) => setPurpose(e.target.value)}
-          required
-          className="border p-1 w-full rounded"
-        />
-      </div>
-
-      <div className="mb-2">
-        <label className="block text-sm font-medium">来客者名（任意）</label>
-        <input
-          type="text"
-          value={guest}
-          onChange={(e) => setGuest(e.target.value)}
-          className="border p-1 w-full rounded"
-        />
-      </div>
-
-      <div className="mb-2">
-        <label className="block text-sm font-medium">開始時間</label>
-        <select
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-          className="border p-1 w-full rounded"
-        >
-          {generateTimeOptions().map((time) => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
+      <div className="flex gap-2 mb-2">
+        <select className="w-1/2 border p-1 rounded" value={startTime} onChange={(e) => setStartTime(e.target.value)}>
+          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select className="w-1/2 border p-1 rounded" value={endTime} onChange={(e) => setEndTime(e.target.value)}>
+          {generateTimeOptions().map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium">終了時間</label>
-        <select
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-          className="border p-1 w-full rounded"
-        >
-          {generateTimeOptions().map((time) => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        予約する
-      </button>
+      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">予約する</button>
     </form>
   );
 };
