@@ -17,7 +17,6 @@ const App = () => {
     endTime: "08:40"
   });
 
-  // 10分刻み時間配列生成
   const timeOptions = [];
   for (let h = 8; h <= 18; h++) {
     for (let m = 0; m < 60; m += 10) {
@@ -29,16 +28,19 @@ const App = () => {
   }
 
   useEffect(() => {
-  const unsubscribe = onSnapshot(collection(db, "reservations"), (snapshot) => {
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log("Firestore予約データ取得:", data); // デバッグ用
-    setReservations(data);
-  }, (error) => {
-    console.error("onSnapshotエラー:", error); // エラーハンドリング
-  });
-  return () => unsubscribe();
-}, []);
-
+    const unsubscribe = onSnapshot(
+      collection(db, "reservations"),
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log("Firestore予約データ取得:", data);
+        setReservations(data);
+      },
+      (error) => {
+        console.error("onSnapshotエラー:", error);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -53,50 +55,8 @@ const App = () => {
     return Math.max(s1, s2) < Math.min(e1, e2);
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const s1 = toMinutes(formData.startTime);
-  const e1 = toMinutes(formData.endTime);
-
-  if (s1 >= e1) {
-    alert("終了時間は開始時間より後にしてください。");
-    return;
-  }
-
-  const duplicate = reservations.find((r) => {
-    return (
-      r.date === formData.date &&
-      r.room === formData.room &&
-      isOverlapping(s1, e1, toMinutes(r.startTime), toMinutes(r.endTime))
-    );
-  });
-
-  if (duplicate) {
-    alert("この時間帯はすでに予約されています。");
-    return;
-  }
-
-  try {
-    await addDoc(collection(db, "reservations"), formData);
-    alert("予約が完了しました。初期画面に戻ります。");
-    setView("form");
-
-    setFormData({
-      name: "",
-      department: "役員",
-      purpose: "",
-      guest: "",
-      room: "1階食堂",
-      date: "",
-      startTime: "08:30",
-      endTime: "08:40"
-    });
-  } catch (error) {
-    alert("Firestoreへの予約登録に失敗しました：" + error.message);
-    console.error("addDocエラー:", error);
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     const s1 = toMinutes(formData.startTime);
     const e1 = toMinutes(formData.endTime);
@@ -110,12 +70,7 @@ const App = () => {
       return (
         r.date === formData.date &&
         r.room === formData.room &&
-        isOverlapping(
-          s1,
-          e1,
-          toMinutes(r.startTime),
-          toMinutes(r.endTime)
-        )
+        isOverlapping(s1, e1, toMinutes(r.startTime), toMinutes(r.endTime))
       );
     });
 
@@ -124,20 +79,24 @@ const App = () => {
       return;
     }
 
-    await addDoc(collection(db, "reservations"), formData);
-    alert("予約が完了しました。初期画面に戻ります。");
-    setView("form");
-
-    setFormData({
-      name: "",
-      department: "役員",
-      purpose: "",
-      guest: "",
-      room: "1階食堂",
-      date: "",
-      startTime: "08:30",
-      endTime: "08:40"
-    });
+    try {
+      await addDoc(collection(db, "reservations"), formData);
+      alert("予約が完了しました。初期画面に戻ります。");
+      setView("form");
+      setFormData({
+        name: "",
+        department: "役員",
+        purpose: "",
+        guest: "",
+        room: "1階食堂",
+        date: "",
+        startTime: "08:30",
+        endTime: "08:40"
+      });
+    } catch (error) {
+      alert("Firestoreへの予約登録に失敗しました：" + error.message);
+      console.error("addDocエラー:", error);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -170,98 +129,38 @@ const App = () => {
 
       {view === "form" && (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-          <input
-            name="name"
-            placeholder="名前"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="text-lg p-2 border rounded"
-          />
-          <select
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            className="text-lg p-2 border rounded"
-          >
+          <input name="name" placeholder="名前" value={formData.name} onChange={handleChange} required className="text-lg p-2 border rounded" />
+          <select name="department" value={formData.department} onChange={handleChange} className="text-lg p-2 border rounded">
             <option value="役員">役員</option>
             <option value="新門司手摺">新門司手摺</option>
             <option value="新門司セラミック">新門司セラミック</option>
             <option value="総務部">総務部</option>
             <option value="その他">その他</option>
           </select>
-          <input
-            name="purpose"
-            placeholder="使用目的"
-            value={formData.purpose}
-            onChange={handleChange}
-            required
-            className="text-lg p-2 border rounded"
-          />
-          <input
-            name="guest"
-            placeholder="来客者名"
-            value={formData.guest}
-            onChange={handleChange}
-            className="text-lg p-2 border rounded"
-          />
-          <select
-            name="room"
-            value={formData.room}
-            onChange={handleChange}
-            className="text-lg p-2 border rounded"
-          >
+          <input name="purpose" placeholder="使用目的" value={formData.purpose} onChange={handleChange} required className="text-lg p-2 border rounded" />
+          <input name="guest" placeholder="来客者名" value={formData.guest} onChange={handleChange} className="text-lg p-2 border rounded" />
+          <select name="room" value={formData.room} onChange={handleChange} className="text-lg p-2 border rounded">
             <option value="1階食堂">1階食堂</option>
             <option value="2階会議室①">2階会議室①</option>
             <option value="2階会議室②">2階会議室②</option>
             <option value="3階会議室">3階会議室</option>
             <option value="応接室">応接室</option>
           </select>
-          <input
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className="text-lg p-2 border rounded"
-          />
+          <input name="date" type="date" value={formData.date} onChange={handleChange} required className="text-lg p-2 border rounded" />
 
           <label className="font-semibold">開始時間</label>
-          <select
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleChange}
-            required
-            className="text-lg p-2 border rounded"
-          >
-            {timeOptions.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+          <select name="startTime" value={formData.startTime} onChange={handleChange} required className="text-lg p-2 border rounded">
+            {timeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
 
           <label className="font-semibold">終了時間</label>
-          <select
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            required
-            className="text-lg p-2 border rounded"
-          >
-            {timeOptions.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+          <select name="endTime" value={formData.endTime} onChange={handleChange} required className="text-lg p-2 border rounded">
+            {timeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
 
-          <button
-  className="bg-green-500 text-white px-4 py-2 rounded"
-  onClick={() => {
-    console.log("一覧表示切り替え");
-    setView("list");
-  }}
->
-  一覧
-</button>
-
+          <button className="bg-blue-600 text-white px-4 py-2 rounded text-xl">予約する</button>
+        </form>
+      )}
 
       {view === "list" && (
         <div>
