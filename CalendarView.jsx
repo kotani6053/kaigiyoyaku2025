@@ -1,5 +1,4 @@
 // src/components/CalendarView.jsx
-
 import React from "react";
 
 const timeSlots = [];
@@ -11,10 +10,10 @@ for (let h = 8; h <= 17; h++) {
 timeSlots.push("18:00");
 
 const CalendarView = ({ reservations, selectedDate }) => {
-  const reservationsForDate = reservations.filter((r) => r.date === selectedDate);
+  const reservationsForDate = reservations.filter(r => r.date === selectedDate);
 
   const getReservationAt = (time) => {
-    return reservationsForDate.find((r) => {
+    return reservationsForDate.find(r => {
       const [sh, sm] = r.startTime.split(":").map(Number);
       const [eh, em] = r.endTime.split(":").map(Number);
       const start = sh * 60 + sm;
@@ -29,7 +28,7 @@ const CalendarView = ({ reservations, selectedDate }) => {
       <div className="bg-gray-100 p-2 font-bold text-center">{selectedDate} の予約状況</div>
       <table className="w-full table-fixed text-sm">
         <tbody>
-          {timeSlots.map((time) => {
+          {timeSlots.map(time => {
             const res = getReservationAt(time);
             return (
               <tr key={time} className="border-b">
