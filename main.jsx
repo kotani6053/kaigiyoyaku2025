@@ -29,12 +29,16 @@ const App = () => {
   }
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "reservations"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setReservations(data);
-    });
-    return () => unsubscribe();
-  }, []);
+  const unsubscribe = onSnapshot(collection(db, "reservations"), (snapshot) => {
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log("Firestore予約データ取得:", data); // デバッグ用
+    setReservations(data);
+  }, (error) => {
+    console.error("onSnapshotエラー:", error); // エラーハンドリング
+  });
+  return () => unsubscribe();
+}, []);
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
