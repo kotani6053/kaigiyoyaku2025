@@ -6,7 +6,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBtLFNwnAqBYFR7eFi-bKaT4Vq9Zu15a6I",
   authDomain: "kotaniapp-4f017.firebaseapp.com",
   projectId: "kotaniapp-4f017",
-  storageBucket: "kotaniapp-4f017.appspot.com",
+  storageBucket: "kotaniapp-4f017.appspot.com", // ← 修正点
   messagingSenderId: "623409374889",
   appId: "1:623409374889:web:8aba02fed565f56c23abb8"
 };
