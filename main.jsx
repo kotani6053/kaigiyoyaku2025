@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { db } from "./firebase";
-import { collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 
 const App = () => {
   const [view, setView] = useState("form");
@@ -17,6 +17,17 @@ const App = () => {
     endTime: "08:40"
   });
 
+  // 10分刻み時間配列生成
+  const timeOptions = [];
+  for (let h = 8; h <= 18; h++) {
+    for (let m = 0; m < 60; m += 10) {
+      if (h === 18 && m > 0) break;
+      const hh = h.toString().padStart(2, "0");
+      const mm = m.toString().padStart(2, "0");
+      timeOptions.push(`${hh}:${mm}`);
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "reservations"), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -29,13 +40,11 @@ const App = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 時間を分換算する関数
   const toMinutes = (t) => {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
   };
 
-  // 時間の重複チェック
   const isOverlapping = (s1, e1, s2, e2) => {
     return Math.max(s1, s2) < Math.min(e1, e2);
   };
@@ -73,7 +82,6 @@ const App = () => {
     alert("予約が完了しました。初期画面に戻ります。");
     setView("form");
 
-    // フォームをリセット
     setFormData({
       name: "",
       department: "役員",
@@ -173,30 +181,30 @@ const App = () => {
           />
 
           <label className="font-semibold">開始時間</label>
-          <input
+          <select
             name="startTime"
-            type="time"
-            step="600"
-            min="08:30"
-            max="18:00"
             value={formData.startTime}
             onChange={handleChange}
             required
             className="text-lg p-2 border rounded"
-          />
+          >
+            {timeOptions.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
 
           <label className="font-semibold">終了時間</label>
-          <input
+          <select
             name="endTime"
-            type="time"
-            step="600"
-            min="08:30"
-            max="18:00"
             value={formData.endTime}
             onChange={handleChange}
             required
             className="text-lg p-2 border rounded"
-          />
+          >
+            {timeOptions.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
 
           <button className="bg-blue-600 text-white px-4 py-2 rounded text-xl">予約する</button>
         </form>
