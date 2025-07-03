@@ -1,7 +1,5 @@
-
 import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore } from "firebase/firestore"; // ← Firestoreのimportを追加
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,3 +13,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firestore and export it
+const db = getFirestore(app); // ← Firestoreを初期化
+export { db }; // ← dbをエクスポート
